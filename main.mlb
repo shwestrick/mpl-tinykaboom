@@ -1,4 +1,4 @@
-$(SML_LIB)/basis/basis.mlb
+lib/sources.mlb
 f32.sml
 vec3.sml
 TinyKaboom.sml

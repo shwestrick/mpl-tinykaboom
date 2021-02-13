@@ -1,0 +1,10 @@
+$(SML_LIB)/basis/basis.mlb
+compat/mlton.mlb
+CommandLineArgs.sml
+Util.sml
+SeqBasis.sml
+Seq.sml
+Color.sml
+Parse.sml
+ExtraBinIO.sml
+GIF.sml

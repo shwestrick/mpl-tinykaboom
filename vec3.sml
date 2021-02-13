@@ -15,4 +15,6 @@ struct
     {x = f (#x a) (#x b), y = f (#y a) (#y b), z = f (#z a) (#z b)}
   fun norm a =
     f32.sqrt (dot (a, a))
+  fun normalise (v: vector): vector =
+    scale (1.0 / norm v) v
 end

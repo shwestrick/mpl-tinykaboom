@@ -10,7 +10,7 @@ fun hash n =
   let
     val x = f32.sin(n)*43758.5453
   in
-    x-f32.floor(x)
+    x-f32.realFloor(x)
   end
 
 type vec3 = vec3.vector
@@ -25,7 +25,7 @@ fun vlerp (v0, v1, t) =
 
 fun noise (x: vec3) =
   let
-    val p = {x = f32.floor(#x x), y = f32.floor(#y x), z = f32.floor(#z x)}
+    val p = {x = f32.realFloor(#x x), y = f32.realFloor(#y x), z = f32.realFloor(#z x)}
     val f = {x = #x x - #x p, y = #y x - #y p, z = #z x - #z p}
     val f = vec3.scale (vec3.dot (f, vec3.sub ({x=3.0,y=3.0,z=3.0}, vec3.scale 2.0 f))) f
     val n = vec3.dot (p, {x=1.0, y=57.0, z=113.0})
@@ -94,58 +94,46 @@ fun sphere_trace t (orig: vec3, dir: vec3) : (bool * vec3) = let
         end)
     )
   end
-(****
 
-let distance_field_normal t pos =
-  let eps = 0.1
-  let d = signed_distance t pos
-  let nx = signed_distance t (pos vec3.+ vec3f(eps, 0, 0)) - d
-  let ny = signed_distance t (pos vec3.+ vec3f(0, eps, 0)) - d
-  let nz = signed_distance t (pos vec3.+ vec3f(0, 0, eps)) - d
+fun distance_field_normal t pos = let
+  val eps = 0.1
+  val d = signed_distance t pos
+  val nx = signed_distance t (vec3.add (pos, vec3f(eps, 0.0, 0.0))) - d
+  val ny = signed_distance t (vec3.add (pos, vec3f(0.0, eps, 0.0))) - d
+  val nz = signed_distance t (vec3.add (pos, vec3f(0.0, 0.0, eps))) - d
   in vec3.normalise (vec3f(nx, ny, nz))
+  end
 
-let main (t: f32) (width: i64) (height: i64): [height][width]argb.colour =
-  let fov = f32.pi/3
-  let f j i =
-    let dir_x = (f32.i64 i + 0.5) - f32.i64 width/2
-    let dir_y = -(f32.i64 j + 0.5) + f32.i64 height/2
-    let dir_z = -(f32.i64 height)/(2*f32.tan(fov/2))
-    let (is_hit, hit) =
-      sphere_trace t (vec3f(0, 0, 3),
+fun rgb r g b =
+  let fun ch x = Word8.fromInt (f32.round (r * 255.0))
+  in {red = ch r, green = ch g, blue = ch b}
+  end
+
+fun frame (t: f32) (width: int) (height: int): Color.pixel array = let
+  val fov = f32.pi / 3.0
+  fun f j i = let
+    val dir_x = (f32.fromInt i + 0.5) - f32.fromInt width / 2.0
+    val dir_y = ~(f32.fromInt j + 0.5) + f32.fromInt height / 2.0
+    val dir_z = ~(f32.fromInt height)/(2.0*f32.tan(fov/2.0))
+    val (is_hit, hit) =
+      sphere_trace t (vec3f(0.0, 0.0, 3.0),
                       vec3.normalise (vec3f(dir_x, dir_y, dir_z)))
-    in if is_hit
-       then let noise_level = (sphere_radius - vec3.norm hit)/noise_amplitude
-            let light_dir = vec3.normalise (vec3f(10, 10, 10) vec3.- hit)
-            let light_intensity = f32.max 0.4 (light_dir `vec3.dot` distance_field_normal t hit)
-            let {x, y, z} =
-              light_intensity `vec3.scale` palette_fire((noise_level - 0.2)*2)
-            in argb.from_rgba x y z 1
-       else argb.from_rgba 0.2 0.7 0.8 1
-  in tabulate_2d height width f
-
-import "lib/github.com/diku-dk/lys/lys"
-
-module lys: lys with text_content = i32 = {
-
-  type text_content = i32
-  let text_format () = "FPS: %d"
-  let text_colour _ = argb.black
-  let text_content fps _ = t32 fps
-  let grab_mouse = false
-
-  type state = {t:f32, h:i64, w:i64}
-
-  let init _ h w: state = {t=0, h, w}
-
-  let event (e: event) (s: state) =
-    match e
-    case #step td -> s with t = s.t + td
-    case _ -> s
-
-  let resize h w (s: state) = s with h = h with w = w
-
-  let render (s: state) = main s.t s.w s.h
-}
-*)
+    in
+      if is_hit then let
+        val noise_level = (sphere_radius - vec3.norm hit)/noise_amplitude
+        val light_dir = vec3.normalise (vec3.sub (vec3f(10.0, 10.0, 10.0), hit))
+        val light_intensity =
+          f32.max 0.4 (vec3.dot (light_dir, distance_field_normal t hit))
+        val {x, y, z} =
+          vec3.scale light_intensity (palette_fire((noise_level - 0.2)*2.0))
+        in rgb x y z
+        end
+      else
+        rgb 0.2 0.7 0.8
+    end
+  in
+    SeqBasis.tabulate 1000 (0, width*height)
+      (fn k => f (k div width) (k mod width))
+  end
 
 end
