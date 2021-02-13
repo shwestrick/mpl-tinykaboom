@@ -34,42 +34,45 @@ fun noise (x: vec3) =
           lerp(lerp(hash(n + 113.0), hash(n + 114.0), #x f),
                lerp(hash(n + 170.0), hash(n + 171.0), #x f), #y f), #z f)
   end
-(****
 
-let rotate v =
-  vec3f(vec3f(0.00,  0.80,  0.60) `vec3.dot` v,
-        vec3f(-0.80,  0.36, -0.48) `vec3.dot` v,
-        vec3f(-0.60, -0.48,  0.64) `vec3.dot` v)
+fun rotate v =
+  vec3f(vec3.dot (vec3f(0.00,  0.80,  0.60), v),
+        vec3.dot (vec3f(~0.80,  0.36, ~0.48), v),
+        vec3.dot (vec3f(~0.60, ~0.48,  0.64), v))
 
-let fractal_brownian_motion (x: vec3) =
-  let p = rotate x
-  let f = 0
-  let f = f + 0.5000*noise p
-  let p = 2.32 `vec3.scale` p
-  let f = f + 0.2500*noise p
-  let p = 3.03 `vec3.scale` p
-  let f = f + 0.1250*noise p
-  let p = 2.61 `vec3.scale` p
-  let f = f + 0.0625*noise p
-  in f/0.9375
+fun fractal_brownian_motion (x: vec3) = let
+  val p = rotate x
+  val f = 0.0
+  val f = f + 0.5000*noise p
+  val p = vec3.scale 2.32 p
+  val f = f + 0.2500*noise p
+  val p = vec3.scale 3.03 p
+  val f = f + 0.1250*noise p
+  val p = vec3.scale 2.61 p
+  val f = f + 0.0625*noise p
+  in f / 0.9375
+  end
 
-let palette_fire (d: f32): vec3 =
-  let yellow = vec3f (1.7, 1.3, 1.0)
-  let orange = vec3f (1.0, 0.6, 0.0)
-  let red = vec3f (1.0, 0.0, 0.0)
-  let darkgray = vec3f (0.2, 0.2, 0.2)
-  let gray = vec3f (0.4, 0.4, 0.4)
+fun palette_fire (d: f32): vec3 = let
+  val yellow = vec3f (1.7, 1.3, 1.0)
+  val orange = vec3f (1.0, 0.6, 0.0)
+  val red = vec3f (1.0, 0.0, 0.0)
+  val darkgray = vec3f (0.2, 0.2, 0.2)
+  val gray = vec3f (0.4, 0.4, 0.4)
 
-  let x = f32.max 0 (f32.min 1 d)
-  in if x < 0.25 then vlerp(gray, darkgray, x*4)
-     else if x < 0.5 then vlerp(darkgray, red, x*4-1)
-     else if x < 0.75 then vlerp(red, orange, x*4-2)
-     else vlerp(orange, yellow, x*4-3)
+  val x = f32.max 0.0 (f32.min 1.0 d)
+  in if x < 0.25 then vlerp(gray, darkgray, x*4.0)
+     else if x < 0.5 then vlerp(darkgray, red, x*4.0-1.0)
+     else if x < 0.75 then vlerp(red, orange, x*4.0-2.0)
+     else vlerp(orange, yellow, x*4.0-3.0)
+  end
 
-let signed_distance t p =
-  let displacement = -fractal_brownian_motion(3.4 `vec3.scale` p) * noise_amplitude
+fun signed_distance t p = let
+  val displacement = ~(fractal_brownian_motion(vec3.scale 3.4 p)) * noise_amplitude
   in vec3.norm p - (sphere_radius * f32.sin(t*0.25) + displacement)
+  end
 
+(****
 let sphere_trace t (orig: vec3, dir: vec3): (bool, vec3) =
   let check (i, hit) = (i == 1337, hit) in
   if (orig `vec3.dot` orig) - (orig `vec3.dot` dir) ** 2 > sphere_radius ** 2

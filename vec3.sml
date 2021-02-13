@@ -13,4 +13,6 @@ struct
     {x = s*x, y = s*y, z = s*z}
   fun map2 f (a: vector) (b: vector) =
     {x = f (#x a) (#x b), y = f (#y a) (#y b), z = f (#z a) (#z b)}
+  fun norm a =
+    f32.sqrt (dot (a, a))
 end
