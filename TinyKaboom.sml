@@ -1,4 +1,8 @@
-structure TinyKaboom =
+structure TinyKaboom:
+sig
+  (** frame time width height *)
+  val frame: f32.real -> int -> int -> Color.pixel array
+end =
 struct
 
 type f32 = f32.real
@@ -104,9 +108,12 @@ fun distance_field_normal t pos = let
   in vec3.normalise (vec3f(nx, ny, nz))
   end
 
-fun rgb r g b =
-  let fun ch x = Word8.fromInt (f32.round (r * 255.0))
-  in {red = ch r, green = ch g, blue = ch b}
+fun rgb (r: f32) (g: f32) (b: f32) =
+  let
+    fun clamp x = f32.min 1.0 (f32.max 0.0 x)
+    fun ch x = Word8.fromInt (f32.round (clamp x * 255.0))
+  in
+    {red = ch r, green = ch g, blue = ch b}
   end
 
 fun frame (t: f32) (width: int) (height: int): Color.pixel array = let
