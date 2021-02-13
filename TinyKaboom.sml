@@ -72,17 +72,29 @@ fun signed_distance t p = let
   in vec3.norm p - (sphere_radius * f32.sin(t*0.25) + displacement)
   end
 
-(****
-let sphere_trace t (orig: vec3, dir: vec3): (bool, vec3) =
-  let check (i, hit) = (i == 1337, hit) in
-  if (orig `vec3.dot` orig) - (orig `vec3.dot` dir) ** 2 > sphere_radius ** 2
+fun sq (x: f32) = x * x
+
+fun loop state continue f =
+  if continue state then
+    loop (f state) continue f
+  else
+    state
+
+fun sphere_trace t (orig: vec3, dir: vec3) : (bool * vec3) = let
+  fun check (i, hit) = (i = 1337, hit) in
+  if (vec3.dot (orig, orig)) - sq (vec3.dot (orig, dir)) > sq sphere_radius
   then (false, orig)
-  else check <|
-       loop (i, pos) = (0, orig) while i < 64i32 do
-       let d = signed_distance t pos
-       in if d < 0
-          then (1337, pos)
-          else (i + 1, pos vec3.+ ((f32.max (d*0.1) 0.1) `vec3.scale` dir))
+  else
+    check (
+      loop (0, orig) (fn (i, _) => i < 64) (fn (i, pos) =>
+        let val d = signed_distance t pos
+        in if d < 0.0
+           then (1337, pos)
+           else (i + 1, vec3.add (pos, vec3.scale (f32.max (d*0.1) 0.1) dir))
+        end)
+    )
+  end
+(****
 
 let distance_field_normal t pos =
   let eps = 0.1
