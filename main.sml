@@ -26,6 +26,8 @@ val (images, tm) = Util.getTime (fn _ =>
         (TinyKaboom.frame (f32.fromInt frame / f32.fromInt fps) width height)
     }))
 val _ = print ("generated all frames in " ^ Time.fmt 4 tm ^ "s\n")
+val perFrame = Time.fromReal (Time.toReal tm / Real.fromInt frames)
+val _ = print ("average time per frame: " ^ Time.fmt 4 perFrame ^ "s\n")
 
 val _ = print ("generating palette...\n")
 (* val palette = GIF.Palette.summarize [Color.white, Color.black] 256
