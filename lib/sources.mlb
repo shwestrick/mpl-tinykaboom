@@ -5,6 +5,5 @@ Util.sml
 SeqBasis.sml
 Seq.sml
 Color.sml
-Parse.sml
 ExtraBinIO.sml
 GIF.sml

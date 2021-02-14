@@ -9,10 +9,7 @@ local
     structure Word8ArrayExtra = Word8Array
   end
 
-  PosixReadFile.sml
   mlton.sml
 in
   structure ForkJoin
-  structure Concurrency
-  structure ReadFile
 end

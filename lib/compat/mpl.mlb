@@ -6,6 +6,4 @@ local
   mpl.sml
 in
   structure ForkJoin
-  structure Concurrency
-  structure ReadFile
 end
