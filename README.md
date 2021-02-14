@@ -9,9 +9,11 @@ some reason...)
 
 ![](boom-24fps.gif)
 
-## Performance
+## Multicore performance
 
 Machine: 4x Intel 18-core E7-8867 v4 Xeons (144 hyperthreads).
+
+Time to generate one frame:
 
 | MPL   | Futhark |
 | ----- | ------- |
