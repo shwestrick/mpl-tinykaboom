@@ -1,8 +1,4 @@
-structure TinyKaboom:
-sig
-  (** frame time width height *)
-  val frame: f32.real -> int -> int -> Color.pixel array
-end =
+structure TinyKaboom =
 struct
 
 type f32 = f32.real

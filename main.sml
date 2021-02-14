@@ -27,12 +27,24 @@ val (images, tm) = Util.getTime (fn _ =>
     }))
 val _ = print ("generated all frames in " ^ Time.fmt 4 tm ^ "s\n")
 
-val _ = print ("generating palette (TODO could do this better)...\n")
-val palette = GIF.Palette.summarize [Color.white, Color.black] 256
+val _ = print ("generating palette...\n")
+(* val palette = GIF.Palette.summarize [Color.white, Color.black] 256
   { width = width
   , height = height
   , data = ArraySlice.full (TinyKaboom.frame 5.1667 640 480)
-  }
+  } *)
+
+fun sampleColor i =
+  let
+    val k = Util.hash i
+    val frame = (k div (width*height)) mod frames
+    val idx = k mod (width*height)
+  in
+    Seq.nth (#data (Array.sub (images, frame))) idx
+  end
+
+val palette = GIF.Palette.summarizeBySampling [Color.white, Color.black] 256
+  sampleColor
 
 val _ = print ("writing to boom.gif...\n")
 val msBetween = Real.round ((1.0 / Real.fromInt fps) * 100.0)

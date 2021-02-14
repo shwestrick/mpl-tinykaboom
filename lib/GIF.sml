@@ -15,6 +15,11 @@ sig
      *)
     val summarize: pixel list -> int -> image -> t
 
+    (* Same as `summarize`, except now just an arbitrary sampling function
+     * is given instead of an image.
+     *)
+    val summarizeBySampling: pixel list -> int -> (int -> pixel) -> t
+
     (* Selects a quantized color palette. *)
     val quantized: (int * int * int) -> t
 
@@ -133,7 +138,7 @@ struct
         }
       end
 
-    fun summarize requiredColors paletteSize ({data, width, height}: image) =
+    fun summarizeBySampling requiredColors paletteSize (sample: int -> Color.pixel) =
       if paletteSize <= 0 then
         err "summarize: palette size must be at least 1"
       else if paletteSize > 256 then
@@ -142,8 +147,6 @@ struct
         err "summarize: Too many required colors"
       else
       let
-        val n = Seq.length data
-
         val dist = Color.sqDistance
 
         val dimBits = 3
@@ -183,9 +186,6 @@ struct
           end
 
         val candidatesSize = 20
-
-        fun sample i =
-          Seq.nth data (Util.hash i mod n)
 
         fun chooseColorsLoop i =
           if tableSize () = paletteSize then () else
@@ -250,6 +250,14 @@ struct
                     (remapOne o Seq.nth data))
       in
         {colors = palette, remap = remap}
+      end
+
+    fun summarize cs sz ({data, width, height}: image) =
+      let
+        val n = Seq.length data
+        fun sample i = Seq.nth data (Util.hash i mod n)
+      in
+        summarizeBySampling cs sz sample
       end
 
   end
