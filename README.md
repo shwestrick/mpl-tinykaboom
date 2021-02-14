@@ -3,7 +3,7 @@
 A port (MPL) of a [port (Futhark)](https://github.com/athas/tinykaboom) of the
 [KABOOM (C++)](https://github.com/ssloy/tinykaboom) tiny graphics program.
 
-Here's my current result at 24 fps with MPL:
+Here's my current result at 60 fps with MPL:
 
 ![](boom-60fps.gif)
 
