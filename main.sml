@@ -48,12 +48,38 @@ fun sampleColor i =
 val palette = GIF.Palette.summarizeBySampling [Color.white, Color.black] 256
   sampleColor
 
+val blowUpFactor = CLA.parseInt "blowup" 1
+val _ = print ("blowup " ^ Int.toString blowUpFactor ^ "\n")
+
+fun blowUpImage (image as {width, height, data}) =
+  if blowUpFactor = 1 then image else
+  let
+    val width' = blowUpFactor * width
+    val height' = blowUpFactor * height
+    val output = ForkJoin.alloc (width' * height')
+    val _ =
+      ForkJoin.parfor 1 (0, height) (fn i =>
+        ForkJoin.parfor (1000 div blowUpFactor) (0, width) (fn j =>
+          let
+            val c = Seq.nth data (i*width + j)
+          in
+            Util.for (0, blowUpFactor) (fn di =>
+              Util.for (0, blowUpFactor) (fn dj =>
+                Array.update (output, (i*blowUpFactor+di)*width' + (j*blowUpFactor+dj), c)))
+          end))
+  in
+    { width = width'
+    , height = height'
+    , data = ArraySlice.full output
+    }
+  end
+
 val _ = print ("writing to boom.gif...\n")
 val msBetween = Real.round ((1.0 / Real.fromInt fps) * 100.0)
 val result =
   GIF.writeMany "boom.gif" msBetween palette
-    { width = width
-    , height = height
+    { width = blowUpFactor * width
+    , height = blowUpFactor * height
     , numImages = frames
-    , getImage = fn i => #remap palette (Array.sub (images, i))
+    , getImage = fn i => #remap palette (blowUpImage (Array.sub (images, i)))
     }
